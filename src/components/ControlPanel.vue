@@ -9,10 +9,10 @@
   .controller
     .table__cell__4.song-info-wrapper
       .table__cell__3.song-info-album-wrapper
-        img(src="" alt="/")
+        img(src="../assets/Anno_Domini_Beats.jpg" alt="/")
       .table__cell__9.song-info
-        .song-info-name I Don’t Care
-        .song-info-artist Ed Sheehan (with Justin Bieber)
+        .song-info-name Homebound
+        .song-info-artist ANNO DOMINI BEATS
     .table__cell__4.controller-main
       span.button.button-shuffle
       span.button.button-presong
@@ -97,7 +97,14 @@ export default defineComponent({
 
   &-album-wrapper {
     display: flex;
+    justify-content: flex-end;
     align-items: center;
+    padding-right: 20px;
+
+    img {
+      width: 40px;
+      height: 40px;
+    }
   }
 
   display: flex;
