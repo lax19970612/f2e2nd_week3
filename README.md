@@ -20,9 +20,9 @@ npm run build
 npm run test:unit
 ```
 
-### Lints and fixes files
+### Prettier format
 ```
-npm run lint
+npm run prettier-format
 ```
 
 ### Customize configuration
