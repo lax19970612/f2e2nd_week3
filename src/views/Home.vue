@@ -1,8 +1,8 @@
 <template lang="pug">
 .container
   .home-contain-wrapper
-    ArtistPanel
-    Album
+    ArtistPanel.table__cell__4
+    Album.table__cell__8
   UserPanel
   ControlPanel
 </template>
@@ -32,6 +32,7 @@ export default defineComponent({
   display: flex;
   width: 100%;
   height: 100%;
+  overflow: hidden;
 }
 
 .home-contain {

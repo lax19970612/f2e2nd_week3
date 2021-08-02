@@ -11,9 +11,4 @@ export default defineComponent({
 });
 </script>
 
-<style lang="scss" scoped>
-#artist-panel {
-  width: 40%;
-  height: 100%;
-}
-</style>
+<style lang="scss" scoped></style>

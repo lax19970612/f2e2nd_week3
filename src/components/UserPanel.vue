@@ -31,6 +31,7 @@ export default defineComponent({
   height: 100%;
   position: absolute;
   right: 0;
+  z-index: 3;
 
   background-color: #4b3434;
 }
