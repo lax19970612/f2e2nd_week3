@@ -2,10 +2,10 @@
 #album
   .album-info-wrapper
     .table__cell__3.album-cover-wrapper
-      img.album-cover(src="../../assets/Anno_Domini_Beats.jpg")
+      img.album-cover(:src="data.coverUrl")
     .table__cell__9.album-info
-      .album-publish-years 2019
-      .album-title ANNO DOMINI BEATS
+      .album-publish-years {{ data.years }}
+      .album-title {{ data.name }}
       .album-button-play-all-songs PLAY
   .album-songlist
     .album-songlist-table-header
@@ -14,23 +14,65 @@
       .table__cell__2.album-songlist-song-length LENGTH
       .table__cell__3.album-songlist-song-like
         img(src="../../assets/svg/album/heart-header.svg")
-    .album-songlist-table-row
+    .album-songlist-table-row(v-for="(song, index) in data.songList" :key="song.id" @click="playSong(song.id)")
       .table__cell__2.album-songlist-song-index
-        img(src="../../assets/svg/album/ic_music_note_24px.svg")
-        span 1
-      .table__cell__5.album-songlist-song-name Homebound
-      .table__cell__2.album-songlist-song-length 3:17
+        img(v-show="song.id === currentSong?.id" src="../../assets/svg/album/ic_music_note_24px.svg")
+        span {{ index + 1 }}
+      .table__cell__5.album-songlist-song-name {{ song.name }}
+      .table__cell__2.album-songlist-song-length {{ durationFormat(song.duration) }}
       .table__cell__3.album-songlist-song-like
-        span 12,523
-        .button-song.button-song-notlike-yet
+        span {{ likeNumberFormat(Math.floor(Math.random() * 5000 ) + 10000) }}
+        .button-song(:class="[song.like ? 'button-song-like' : 'button-song-notlike-yet']" @click="toggleSongLike($event, song.id)")
 </template>
 
 <script lang="ts">
-import { defineComponent } from 'vue';
+import { defineComponent, PropType } from 'vue';
+import Album from '../../interfaces/album';
+import Song from '../../interfaces/song';
 
 export default defineComponent({
   name: 'Album',
-  setup() {}
+  props: {
+    data: {
+      type: Object as PropType<Album>,
+      require: true
+    },
+    currentSong: {
+      type: Object as PropType<Song> | null,
+      require: true
+    }
+  },
+  setup(props, { emit }) {
+    const durationFormat = (duration: number) => {
+      const minute: string = Math.floor(duration / 60)
+        .toString()
+        .padStart(2, '0');
+      const second: string = (duration % 60).toString().padStart(2, '0');
+      return `${minute}:${second}`;
+    };
+
+    const likeNumberFormat = (likeNumber: number) => {
+      const re = new RegExp('(\\d{1,3})(?=(\\d{3})+(?:$|\\D))', 'g');
+      return likeNumber?.toString().replace(re, '$1,');
+    };
+
+    const playSong = (id: string) => {
+      emit('playSongEmit', id);
+    };
+
+    const toggleSongLike = (e: Event, id: string) => {
+      e.preventDefault();
+      e.stopPropagation();
+      emit('toggleSongLikeEmit', id);
+    };
+
+    return {
+      durationFormat,
+      likeNumberFormat,
+      playSong,
+      toggleSongLike
+    };
+  }
 });
 </script>
 
@@ -121,6 +163,12 @@ export default defineComponent({
         height: 56px;
         color: #fff;
         font-size: 18px;
+        cursor: pointer;
+        transition: all 0.3s ease;
+
+        &:hover {
+          background-color: #707070;
+        }
 
         & > div {
           line-height: 56px;

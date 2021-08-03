@@ -2,7 +2,7 @@
 .container
   .home-contain-wrapper
     ArtistPanel.table__cell__4
-    Album.table__cell__8
+    Album(:data="albumData" :currentSong="currentSong").table__cell__8
   UserPanel
   ControlPanel
 </template>
@@ -32,6 +32,26 @@ export default defineComponent({
       albumData: AlbumData,
       currentSong: null as null | Song
     });
+
+    state.currentSong = state.albumData.songList[0];
+
+    function getDuration(audioData: HTMLAudioElement) {
+      return new Promise((resolve) => {
+        audioData.onloadeddata = () => {
+          resolve(Math.floor(audioData.duration));
+        };
+      });
+    }
+
+    // preload metadata and setting data here
+    (async () => {
+      state.albumData.songList = await Promise.all(
+        state.albumData.songList.map(async (song) => {
+          const duration = await getDuration(song.data);
+          return { ...song, duration };
+        })
+      ).then((results) => results);
+    })();
 
     return {
       ...toRefs(state)
