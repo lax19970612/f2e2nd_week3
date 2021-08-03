@@ -8,11 +8,15 @@
 </template>
 
 <script lang="ts">
-import { defineComponent } from 'vue';
+import { defineComponent, reactive, toRefs } from 'vue';
+
 import UserPanel from '../components/UserPanel.vue';
 import ControlPanel from '../components/ControlPanel.vue';
 import Album from './home/Album.vue';
 import ArtistPanel from './home/ArtistPanel.vue';
+
+import Song from '../interfaces/song';
+import AlbumData from '../assets/AlbumData';
 
 export default defineComponent({
   name: 'Home',
@@ -23,7 +27,16 @@ export default defineComponent({
     ArtistPanel
   },
 
-  setup() {}
+  setup() {
+    const state = reactive({
+      albumData: AlbumData,
+      currentSong: null as null | Song
+    });
+
+    return {
+      ...toRefs(state)
+    };
+  }
 });
 </script>
 
