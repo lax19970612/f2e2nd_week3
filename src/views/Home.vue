@@ -35,7 +35,7 @@ export default defineComponent({
 
     state.currentSong = state.albumData.songList[0];
 
-    function getDuration(audioData: HTMLAudioElement) {
+    function getDuration(audioData: HTMLAudioElement): Promise<number> {
       return new Promise((resolve) => {
         audioData.onloadeddata = () => {
           resolve(Math.floor(audioData.duration));
