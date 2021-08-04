@@ -2,7 +2,11 @@
 .container
   .home-contain-wrapper
     ArtistPanel.table__cell__4
-    Album(:data="albumData" :currentSong="currentSong").table__cell__8
+    Album.table__cell__8(
+      :data="albumData"
+      :currentSong="currentSong"
+      @playSongEmit="playSongEmitHandler"
+      @toggleSongLikeEmit="toggleSongLikeEmitHandler")
   UserPanel
   ControlPanel
 </template>
@@ -35,13 +39,33 @@ export default defineComponent({
 
     state.currentSong = state.albumData.songList[0];
 
-    function getDuration(audioData: HTMLAudioElement): Promise<number> {
+    const getDuration = (audioData: HTMLAudioElement): Promise<number> => {
       return new Promise((resolve) => {
         audioData.onloadeddata = () => {
           resolve(Math.floor(audioData.duration));
         };
       });
-    }
+    };
+
+    const playSongEmitHandler = (songID: string) => {
+      const index: number = state.albumData.songList.findIndex((song: Song) => {
+        return song.id === songID;
+      });
+      if (index !== -1) {
+        state.currentSong = state.albumData.songList[index];
+      }
+    };
+
+    const toggleSongLikeEmitHandler = (songID: string) => {
+      const index: number = state.albumData.songList.findIndex((song: Song) => {
+        return song.id === songID;
+      });
+
+      if (index !== -1) {
+        state.albumData.songList[index].like =
+          !state.albumData.songList[index].like;
+      }
+    };
 
     // preload metadata and setting data here
     (async () => {
@@ -54,7 +78,9 @@ export default defineComponent({
     })();
 
     return {
-      ...toRefs(state)
+      ...toRefs(state),
+      playSongEmitHandler,
+      toggleSongLikeEmitHandler
     };
   }
 });

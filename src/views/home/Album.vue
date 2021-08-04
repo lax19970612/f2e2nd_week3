@@ -6,7 +6,7 @@
     .table__cell__9.album-info
       .album-publish-years {{ data.years }}
       .album-title {{ data.name }}
-      .album-button-play-all-songs PLAY
+      .album-button-play-all-songs(@click="playSong(data.songList[0].id)") PLAY
   .album-songlist
     .album-songlist-table-header
       .table__cell__2
