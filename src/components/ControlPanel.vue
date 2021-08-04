@@ -1,39 +1,179 @@
 <template lang="pug">
 #control-panel
-  .progress-bar-wrapper
-    .progress-bar-buffered
-    .progress-bar-played
+  .progress-bar-wrapper(@click="jumpToTime($event)")
+    .progress-bar-buffered(:style="`width: ${bufferTime / duration * 100}%`")
+    .progress-bar-played(:style="`width: ${currentTime / duration * 100}%`")
   .progress-bar-time-wrapper
-    span.progress-bar-time 1:38
-    span.progress-bar-time 3:39
+    span.progress-bar-time {{ durationFormat(currentTime) }}
+    span.progress-bar-time {{ durationFormat(duration) }}
   .controller
     .table__cell__4.song-info-wrapper
       .table__cell__3.song-info-album-wrapper
-        img(src="../assets/Anno_Domini_Beats.jpg" alt="/")
+        img(:src="currentSong?.coverUrl" alt="/")
       .table__cell__9.song-info
-        .song-info-name Homebound
-        .song-info-artist ANNO DOMINI BEATS
+        .song-info-name {{ currentSong?.name }}
+        .song-info-artist {{ currentSong?.artist }}
     .table__cell__4.controller-main
-      span.button.button-shuffle
-      span.button.button-presong
-      span.button.button-controller-wrapper
-        span.button-pause
-      span.button.button-nxtsong
-      span.button.button-repeat
+      span.button.button-shuffle(:class="{'button-shuffle-toggled': isShuffle}" @click="shufflePlayToggle")
+      span.button.button-presong(@click="prevSongPlay")
+      span.button.button-controller-wrapper(@click="togglePlay")
+        span(:class="[ isPlaying ? 'button-pause' : 'button-play']")
+      span.button.button-nxtsong(@click="nextSongPlay")
+      span.button.button-repeat(:class="{'button-repeat-toggled': isLoop}" @click="loopPlayToggle")
     .table__cell__4.controller-sub
       .table__cell__8.volumn-controller
         img(src="../assets/svg/controlPanel/ic_volume_up_24px.svg")
         .volumn-progress-bar-wrapper
-          .volumn-progress-bar
-      .table__cell__4.button.button-not-like-yet
+          .volumn-progress-bar(:style="`width: ${volumn * 100}%`")
+      .table__cell__4.button(:class="[currentSong.like ? 'button-like' : 'button-not-like-yet']" @click="toggleSongLike")
 </template>
 
 <script lang="ts">
-import { defineComponent } from 'vue';
+import { defineComponent, PropType, reactive, toRefs, watch } from 'vue';
+import Song from '../interfaces/song';
 
 export default defineComponent({
   name: 'ControlPanel',
-  setup() {}
+  props: {
+    currentSong: {
+      type: Object as PropType<Song> | null,
+      required: true
+    }
+  },
+  setup(props, { emit }) {
+    const state = reactive({
+      audioController: new Audio(props.currentSong?.data?.src),
+      duration: props.currentSong?.duration,
+      currentTime: 0,
+      bufferTime: 0,
+      volumn: 0.5,
+      isPlaying: false,
+      isShuffle: false,
+      isLoop: false
+    });
+
+    const audioInitSetting = () => {
+      state.audioController.onloadedmetadata = () => {
+        if (state.audioController.buffered.length) {
+          const bufferTime: number =
+            state.audioController.buffered.end(0) -
+            state.audioController.buffered.start(0);
+          state.bufferTime = bufferTime;
+        }
+        state.duration = state.audioController.duration;
+      };
+
+      state.audioController.ontimeupdate = () => {
+        if (state.audioController.buffered.length) {
+          const bufferTime: number =
+            state.audioController.buffered.end(0) -
+            state.audioController.buffered.start(0);
+          state.bufferTime = bufferTime;
+        }
+        state.currentTime = state.audioController.currentTime;
+      };
+
+      state.audioController.onended = () => {
+        nextSongPlay();
+      };
+    };
+
+    audioInitSetting();
+
+    const togglePlay = () => {
+      state.isPlaying = !state.isPlaying;
+    };
+
+    const prevSongPlay = () => {
+      if (state.currentTime > 1) {
+        state.currentTime = 0;
+        state.audioController.currentTime = 0;
+      } else {
+        emit('prevSongPlayEmit', {
+          isShuffle: state.isShuffle,
+          isLoop: state.isLoop,
+          isPlaying: state.isPlaying
+        });
+      }
+    };
+
+    const nextSongPlay = () => {
+      emit('nextSongPlayEmit', {
+        isShuffle: state.isShuffle,
+        isLoop: state.isLoop,
+        isPlaying: state.isPlaying
+      });
+    };
+
+    const shufflePlayToggle = () => {
+      state.isShuffle = !state.isShuffle;
+    };
+
+    const loopPlayToggle = () => {
+      state.isLoop = !state.isLoop;
+    };
+
+    const jumpToTime = (event: Event) => {
+      const target = event.target as HTMLElement;
+      const width: number = target.classList.contains('progress-bar-wrapper')
+        ? target.offsetWidth
+        : target.parentElement?.offsetWidth || 0;
+      const time = ((event as PointerEvent).x / width) * state.duration;
+      state.currentTime = time;
+      state.audioController.currentTime = time;
+    };
+
+    const toggleSongLike = () => {
+      emit('toggleSongLikeEmit', props.currentSong.id);
+    };
+
+    const durationFormat = (duration: number) => {
+      const minute: string = Math.floor(duration / 60)
+        .toString()
+        .padStart(2, '0');
+      const second: string = (Math.floor(duration) % 60)
+        .toString()
+        .padStart(2, '0');
+      return `${minute}:${second}`;
+    };
+
+    watch(
+      () => props.currentSong,
+      (song: Song) => {
+        state.duration = song.duration;
+        state.currentTime = 0;
+        // the part play/pause song
+        state.audioController?.pause();
+        state.audioController = new Audio(song.data?.src);
+        audioInitSetting();
+        if (state.isPlaying) {
+          state.audioController?.play();
+        }
+      },
+      { deep: true }
+    );
+
+    watch(
+      () => state.isPlaying,
+      (isPlaying: boolean) => {
+        isPlaying
+          ? state.audioController?.play()
+          : state.audioController?.pause();
+      }
+    );
+
+    return {
+      ...toRefs(state),
+      togglePlay,
+      prevSongPlay,
+      nextSongPlay,
+      shufflePlayToggle,
+      loopPlayToggle,
+      jumpToTime,
+      toggleSongLike,
+      durationFormat
+    };
+  }
 });
 </script>
 
@@ -54,24 +194,26 @@ export default defineComponent({
     width: 100%;
     height: 13px;
     background-color: #fff;
+
+    cursor: pointer;
   }
 
   &-buffered {
     position: absolute;
     top: 0;
     left: 0;
-    width: 70%;
     height: 100%;
     background-color: #eaeaea;
+    transition: width 0.3s ease;
   }
 
   &-played {
     position: absolute;
     top: 0;
     left: 0;
-    width: 40%;
     height: 100%;
     background-color: #e5b4b7;
+    transition: width 0.3s ease;
   }
 }
 
@@ -119,6 +261,7 @@ export default defineComponent({
   &-artist {
     color: #fff;
     font-size: 12px;
+    text-transform: uppercase;
   }
 }
 
@@ -185,6 +328,12 @@ export default defineComponent({
       align-items: center;
       border: 2px solid #fff;
       border-radius: 50%;
+
+      transition: all 0.2s ease;
+
+      &:hover {
+        transform: scale(1.2);
+      }
     }
 
     &-pause {
@@ -226,7 +375,6 @@ export default defineComponent({
     top: 0;
     left: 0;
 
-    width: 70%;
     height: 100%;
     background-color: #964a4d;
     border-radius: 3px;
@@ -237,6 +385,8 @@ export default defineComponent({
       height: 6px;
       background-color: #fff;
       border-radius: 3px;
+
+      cursor: pointer;
     }
   }
 }
