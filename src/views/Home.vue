@@ -1,7 +1,9 @@
 <template lang="pug">
 .container
   .home-contain-wrapper
-    ArtistPanel.table__cell__4
+    ArtistPanel.table__cell__4(
+      @playAllSongsEmit="playAllSongsEmitHandler"
+    )
     Album.table__cell__8(
       :data="albumData"
       :currentSong="currentSong"
@@ -47,6 +49,10 @@ export default defineComponent({
       });
     };
 
+    const playAllSongsEmitHandler = () => {
+      state.currentSong = state.albumData.songList[0];
+    };
+
     const playSongEmitHandler = (songID: string) => {
       const index: number = state.albumData.songList.findIndex((song: Song) => {
         return song.id === songID;
@@ -80,7 +86,8 @@ export default defineComponent({
     return {
       ...toRefs(state),
       playSongEmitHandler,
-      toggleSongLikeEmitHandler
+      toggleSongLikeEmitHandler,
+      playAllSongsEmitHandler
     };
   }
 });

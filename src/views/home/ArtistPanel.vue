@@ -9,7 +9,7 @@
         span ???,???
         span Followers
       .button.button-following following
-      .button.button-play-all-songs play
+      .button.button-play-all-songs(@click="playAllSongs") play
 </template>
 
 <script lang="ts">
@@ -17,7 +17,15 @@ import { defineComponent } from 'vue';
 
 export default defineComponent({
   name: 'ArtistPanel',
-  setup() {}
+  setup(props, { emit }) {
+    const playAllSongs = () => {
+      emit('playAllSongsEmit');
+    };
+
+    return {
+      playAllSongs
+    };
+  }
 });
 </script>
 
