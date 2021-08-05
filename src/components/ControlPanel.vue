@@ -21,10 +21,10 @@
       span.button.button-nxtsong(@click="nextSongPlay")
       span.button.button-repeat(:class="{'button-repeat-toggled': isLoop}" @click="loopPlayToggle")
     .table__cell__4.controller-sub
-      .table__cell__8.volumn-controller
+      .table__cell__8.volume-controller
         img(src="../assets/svg/controlPanel/ic_volume_up_24px.svg")
-        .volumn-progress-bar-wrapper
-          .volumn-progress-bar(:style="`width: ${volumn * 100}%`")
+        .volume-progress-bar-wrapper(@click="volumeUpdate($event)")
+          .volume-progress-bar(:style="`width: ${volume * 100}%`")
       .table__cell__4.button(:class="[currentSong.like ? 'button-like' : 'button-not-like-yet']" @click="toggleSongLike")
 </template>
 
@@ -46,13 +46,15 @@ export default defineComponent({
       duration: props.currentSong?.duration,
       currentTime: 0,
       bufferTime: 0,
-      volumn: 0.5,
+      volume: 0.5,
       isPlaying: false,
       isShuffle: false,
       isLoop: false
     });
 
     const audioInitSetting = () => {
+      state.audioController.volume = state.volume;
+
       state.audioController.onloadedmetadata = () => {
         if (state.audioController.buffered.length) {
           const bufferTime: number =
@@ -123,6 +125,22 @@ export default defineComponent({
       state.audioController.currentTime = time;
     };
 
+    const volumeUpdate = (event: Event) => {
+      const target = event.target as HTMLElement;
+      const width: number = target.classList.contains(
+        'volume-progress-bar-wrapper'
+      )
+        ? target.offsetWidth
+        : target.parentElement?.offsetWidth || 0;
+      const left = target.classList.contains('volume-progress-bar-wrapper')
+        ? target.getBoundingClientRect().left
+        : target.parentElement?.getBoundingClientRect().left || 0;
+
+      const volume = ((event as PointerEvent).x - left) / width;
+      state.volume = volume;
+      state.audioController.volume = volume;
+    };
+
     const toggleSongLike = () => {
       emit('toggleSongLikeEmit', props.currentSong.id);
     };
@@ -170,6 +188,7 @@ export default defineComponent({
       shufflePlayToggle,
       loopPlayToggle,
       jumpToTime,
+      volumeUpdate,
       toggleSongLike,
       durationFormat
     };
@@ -363,7 +382,7 @@ export default defineComponent({
   }
 }
 
-.volumn {
+.volume {
   &-controller {
     display: flex;
     align-items: center;
