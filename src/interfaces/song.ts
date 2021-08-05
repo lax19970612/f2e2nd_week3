@@ -1,9 +1,9 @@
 export default interface Song {
   id: string;
-  data: HTMLAudioElement;
   name: string;
   artist: string;
   duration: number;
+  audioUrl: string;
   coverUrl: string;
   like: boolean;
 }

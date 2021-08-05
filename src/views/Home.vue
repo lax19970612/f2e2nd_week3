@@ -184,7 +184,7 @@ export default defineComponent({
     (async () => {
       state.albumData.songList = await Promise.all(
         state.albumData.songList.map(async (song) => {
-          const duration = await getDuration(song.data);
+          const duration = await getDuration(new Audio(song.audioUrl));
           return { ...song, duration };
         })
       ).then((results) => results);

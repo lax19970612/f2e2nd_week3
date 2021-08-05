@@ -42,7 +42,7 @@ export default defineComponent({
   },
   setup(props, { emit }) {
     const state = reactive({
-      audioController: new Audio(props.currentSong?.data?.src),
+      audioController: new Audio(props.currentSong?.audioUrl),
       duration: props.currentSong?.duration,
       currentTime: 0,
       bufferTime: 0,
@@ -162,13 +162,13 @@ export default defineComponent({
         state.currentTime = 0;
         // the part play/pause song
         state.audioController?.pause();
-        state.audioController = new Audio(song.data?.src);
+        state.audioController = new Audio(song.audioUrl);
         audioInitSetting();
         if (state.isPlaying) {
           state.audioController?.play();
         }
       },
-      { deep: true }
+      { deep: true, immediate: true }
     );
 
     watch(
