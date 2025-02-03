@@ -36,4 +36,4 @@ See [Configuration Reference](https://cli.vuejs.org/config/).
 
 ### Demo site
 
-[https://laxative.github.io/f2e2nd_week3/](https://laxative.github.io/f2e2nd_week3/)
+[https://laxative.github.io/f2e2nd_week3/](https://lax19970612.github.io/f2e2nd_week3/)
